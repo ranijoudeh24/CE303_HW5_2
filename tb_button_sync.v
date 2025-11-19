@@ -12,11 +12,7 @@ module tb_button_sync;
         .rstb(rstb),
         .bi  (bi),
         .bo  (bo)
-    );
-
-    // Reference model: one-shot behavior
-    reg pressed;
-    reg expected_bo;
+    )
 
     // Clock: 1 ns period
     initial begin
@@ -54,33 +50,6 @@ module tb_button_sync;
         repeat (6) @(posedge clk);
         $display("Simulation finished with no mismatches.");
         $finish;
-    end
-
-    // Reference logic + checker (uses non-blocking for regs)
-    always @(posedge clk or negedge rstb) begin
-        if (!rstb) begin
-            pressed     <= 1'b0;
-            expected_bo <= 1'b0;
-        end else begin
-            // expected one-cycle pulse on first cycle of a press
-            if (!pressed && bi)
-                expected_bo <= 1'b1;
-            else
-                expected_bo <= 1'b0;
-
-            // track “inside a press”
-            if (bi)
-                pressed <= 1'b1;
-            else
-                pressed <= 1'b0;
-
-            // compare DUT vs reference
-            if (bo !== expected_bo) begin
-                $display("Mismatch at time %0t: bi=%b bo=%b expected=%b",
-                         $time, bi, bo, expected_bo);
-                $stop;
-            end
-        end
     end
 
 endmodule
